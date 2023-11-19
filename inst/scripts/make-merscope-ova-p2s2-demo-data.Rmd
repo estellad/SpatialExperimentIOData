@@ -1,0 +1,66 @@
+---
+title: Processing the MERSCOPE Ovarian Patient 2 Slice 2 dataset
+author: Estella Yixing Dong
+date: "November 10, 2023"
+output:
+  BiocStyle::html_document:
+    titlecaps: false
+    toc_float: true
+bibliography: /ref.bib
+---
+
+
+```{r style, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+library(BiocStyle)
+knitr::opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
+```
+
+# Downloading the count data
+
+We obtain a single-cell RNA sequencing dataset of Xenopus tail cells from ...TODO
+We download and cache the count matrix and metadata using the `r Biocpkg("BiocFileCache")` package.
+
+We load the counts into memory.
+
+```{r}
+# TODO: change to url
+mer_ovarian_p2s2_path <- "~/Desktop/SampleData/Raw/Vizgen_MERSCOPE/Ovarian/P2/S2"
+counts <- read.csv(file.path(mer_ovarian_p2s2_path, "OvarianP2S2_cell_by_gene.csv")) # 71381   551
+meta <- read.csv(file.path(mer_ovarian_p2s2_path, "OvarianP2S2_cell_metadata.csv"))  # 71381     9
+```
+
+# Subset to a small region for demo data
+
+```{r}
+library(dplyr)
+meta_test <- meta %>%
+  dplyr::filter(center_x > 10000 & center_y > 8000) %>%
+  select("X", "fov", "volume", "center_x", "center_y")
+
+counts_test <- counts %>%
+  mutate(X = cell) %>%
+  right_join(meta_test[, c("X", "fov")], by = "X") %>%
+  select(-c(X, fov))
+```
+
+# Saving for upload 
+
+We save the annotated Chromium to file for upload to `r Biocpkg("ExperimentHub")`.
+
+```{r}
+mer_ovarian_p2s2_demo_path <- "~/Desktop/SampleData/Raw/Vizgen_MERSCOPE/Ovarian/P2/p2s2_demo"
+write.csv(counts_test, file.path(mer_ovarian_p2s2_demo_path, "small_ovarian_p2s2_cell_by_gene.csv"), row.names = FALSE)
+write.csv(meta_test, file.path(mer_ovarian_p2s2_demo_path, "small_ovarian_p2s2_cell_metadata.csv"), row.names = FALSE)
+
+mer_small <- readMerscopeSXE(mer_ovarian_p2s2_demo_path)
+repath <- file.path("scSpatialExperimentData", "MERSCOPE")
+saveRDS(mer_small, file.path(repath, "smallMer_p2s2.rds"))
+```
+
+# Session information
+
+```{r}
+sessionInfo()
+```
+
+# References

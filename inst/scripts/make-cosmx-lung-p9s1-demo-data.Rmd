@@ -1,0 +1,65 @@
+---
+title: Processing the MERSCOPE Ovarian Patient 9 Slice 1 dataset
+author: Estella Yixing Dong
+date: "November 10, 2023"
+output:
+  BiocStyle::html_document:
+    titlecaps: false
+    toc_float: true
+bibliography: /ref.bib
+---
+
+
+```{r style, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+library(BiocStyle)
+knitr::opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
+```
+
+# Downloading the count data
+
+We obtain a single-cell RNA sequencing dataset of Xenopus tail cells from ...TODO
+We download and cache the count matrix and metadata using the `r Biocpkg("BiocFileCache")` package.
+
+We load the counts into memory.
+
+```{r}
+# TODO: change to url
+cosmx_lung_p9s1_path <- "~/Desktop/SampleData/Raw/Nanostring_CosMx/Lung/P9/S1"
+counts <- read.csv(file.path(cosmx_lung_p9s1_path, "cell_by_gene.csv")) # 91992   982
+meta <- read.csv(file.path(cosmx_lung_p9s1_path, "cell_metadata.csv"))  # 91972    20
+```
+
+# Subset to a small region for demo data
+
+```{r}
+library(dplyr)
+counts_test <- counts %>%
+  dplyr::filter(fov %in% c(10, 11)) %>%
+  dplyr::filter(cell_ID != 0)# take 2 fov, around 1/10 of the original # of cells
+
+meta_test <- meta %>%
+  right_join(counts_test[, c("fov", "cell_ID")], by = c("fov", "cell_ID")) %>%
+  select("fov", "cell_ID", "Area", "CenterX_local_px", "CenterY_local_px", "CenterX_global_px", "CenterY_global_px")
+```
+
+# Saving for upload 
+
+We save the annotated Chromium to file for upload to `r Biocpkg("ExperimentHub")`.
+
+```{r}
+cosmx_lung_p9s1_demo_path <- "~/Desktop/SampleData/Raw/Nanostring_CosMx/Lung/P9/test_small_demo"
+write.csv(counts_test, file.path(cosmx_lung_p9s1_demo_path, "small_lung_p9s1_exprMat_file.csv"), row.names = FALSE)
+write.csv(meta_test, file.path(cosmx_lung_p9s1_demo_path, "small_lung_p9s1_metadata_file.csv"), row.names = FALSE)
+
+cos_small <- readMerscopeSXE(cosmx_lung_p9s1_demo_path)
+repath <- file.path("scSpatialExperimentData", "CosMx")
+saveRDS(cos_small, file.path(repath, "smallCos_p9s1.rds"))
+```
+
+# Session information
+
+```{r}
+sessionInfo()
+```
+
+# References
