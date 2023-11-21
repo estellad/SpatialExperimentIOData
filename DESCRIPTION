@@ -1,0 +1,14 @@
+Package: SpatialExperimentIOData
+Title: Load Xenium, CosMx, Merscope, etc. data from ExperimentHub for demonstrating the reader package SpatialExperimentIO.
+Version: 0.1.0
+Authors@R: c(
+    person("Yixing E.", "Dong", 
+        email = "estelladong729@gmail.com", 
+        role = c("aut", "cre"), 
+        comment = c(ORCID = "0000-0003-3839-7958")))
+Description: Load Xenium, CosMx, Merscope, etc. data from ExperimentHub for demonstrating the reader package SpatialExperimentIO.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
